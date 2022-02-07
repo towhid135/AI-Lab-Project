@@ -1,0 +1,379 @@
+<html>
+
+<script>
+
+// 0(nothing),1(black),2(white)
+var blackBackground;
+var gap = 3;
+var cellWidth = 65;
+var discLayer;
+var turn = 1;
+var discs = [];
+var scoreLabel;
+var SelectTurn;
+
+for(i=0; i<8; i++)
+{
+  discs[i] = [];
+}
+for(row=0; row<8; row++){
+        for(column=0; column<8; column++)
+		{
+		   if( row==3 && column==3)    discs[row][column]=2;
+		   else if(row==3 && column==4) discs[row][column]=1;
+		   else if(row==4 && column==3) discs[row][column]=1;
+		   else if(row==4 && column==4) discs[row][column]=2;
+		   else discs[row][column] = 0;
+		}
+
+}
+
+
+
+window.onload = function(){
+     selectTurn = document.getElementById("Turn");
+     scoreLabel = document.getElementById("score");
+     blackBackground = document.getElementById("blackBackground");
+	 discLayer = document.getElementById("discLayer");
+	 blackBackground.style.width = cellWidth*8 + (gap*9);
+	 blackBackground.style.height = cellWidth*8 + (gap*9);
+	 drawGreenSquares();
+	 drawDiscs();
+	 
+}
+function drawGreenSquares(){
+     for(var row=0; row<8; row++){
+	 
+	      for(var column=0; column<8; column++){
+		      var greenSquare = document.createElement("div");
+			  greenSquare.style.position = "absolute";
+			  greenSquare.style.width = cellWidth;
+			  greenSquare.style.height = cellWidth;
+			  greenSquare.style.backgroundColor = "green";
+			  greenSquare.style.left = (cellWidth+gap)*column + gap;
+			  greenSquare.style.top = (cellWidth+gap)*row + gap;
+			  greenSquare.setAttribute("onclick","clickedSquare("+row+","+column+")");
+			  blackBackground.appendChild(greenSquare);
+
+			 }
+		 }
+	}
+	
+function clickedSquare(row,column){
+     //if clicked spot is not empty (green only) then return
+    if(discs[row][column] !=0 ) return;
+  
+    if(canClickSpot(row,column)==true){
+	   var affectedDiscs = getAffectedDiscs(row,column);
+	   flipDiscs(affectedDiscs);
+	   discs[row][column] = turn;
+	  if(turn==1){
+	  turn = 2;
+	  selectTurn.innerHTML = "Turn = White"
+	  }
+	  else {
+	  turn = 1;
+	  selectTurn.innerHTML = "Turn = Black"
+	  }
+	  drawDiscs();
+	  redrawScore();
+	}   
+	
+
+}
+
+// counting score
+function redrawScore(){
+    var ones = 0;
+	var twos = 0;
+	for(var row = 0; row < 8; row++){
+	   for(var column = 0; column < 8; column++){
+	   var value = discs[row][column];
+	   if(value==1) ones++;
+	   else if(value==2) twos++;
+	   }
+	 }
+	 
+	 scoreLabel.innerHTML = "Black: "+ones+"White: "+twos;
+	
+
+}
+
+
+
+// starts of valid move
+
+function canClickSpot(row,column){
+
+     var affectedDiscs = getAffectedDiscs(row,column);
+	 if(affectedDiscs.length == 0) return false;
+	 else return true;
+
+}
+
+function getAffectedDiscs(row,column){
+
+  var affectedDiscs = [];
+  var couldBeAffected = [];
+  var columnIterator = column;
+  var rowIterator = row;
+  
+  //to the right
+  while(columnIterator < 7 ){
+       
+	   columnIterator += 1;
+	   var valueAtSpot = discs[row][columnIterator];
+	   if(valueAtSpot == 0 || valueAtSpot == turn){
+	   
+	    if(valueAtSpot == turn){
+		  affectedDiscs = affectedDiscs.concat(couldBeAffected);
+		}
+		break;
+	   
+	   
+	   }
+	   else{
+	    var discLocation = {row:row,column:columnIterator};
+		couldBeAffected.push(discLocation);
+	   }
+	   
+  }
+  
+  //check left
+  couldBeAffected = [];
+  var columnIterator = column;
+  while(columnIterator > 0 ){
+       
+	   columnIterator -= 1;
+	   var valueAtSpot = discs[row][columnIterator];
+	   if(valueAtSpot == 0 || valueAtSpot == turn){
+	   
+	    if(valueAtSpot == turn){
+		  affectedDiscs = affectedDiscs.concat(couldBeAffected);
+		}
+		break;
+	   
+	   
+	   }
+	   else{
+	    var discLocation = {row:row,column:columnIterator};
+		couldBeAffected.push(discLocation);
+	   }
+	   
+  }
+  
+  //check up
+  couldBeAffected = [];
+  var rowIterator = row;
+  while(rowIterator > 0 ){
+       
+	   rowIterator -= 1;
+	   var valueAtSpot = discs[rowIterator][column];
+	   if(valueAtSpot == 0 || valueAtSpot == turn){
+	   
+	    if(valueAtSpot == turn){
+		  affectedDiscs = affectedDiscs.concat(couldBeAffected);
+		}
+		break;
+	   
+	   
+	   }
+	   else{
+	    var discLocation = {row:rowIterator,column:column};
+		couldBeAffected.push(discLocation);
+	   }
+	   
+  }
+  
+  //check Down
+  couldBeAffected = [];
+  var rowIterator = row;
+  while(rowIterator < 7 ){
+       
+	   rowIterator += 1;
+	   var valueAtSpot = discs[rowIterator][column];
+	   if(valueAtSpot == 0 || valueAtSpot == turn){
+	   
+	    if(valueAtSpot == turn){
+		  affectedDiscs = affectedDiscs.concat(couldBeAffected);
+		}
+		break;
+	   
+	   
+	   }
+	   else{
+	    var discLocation = {row:rowIterator,column:column};
+		couldBeAffected.push(discLocation);
+	   }
+	   
+  }
+  
+  //upper right corner
+  couldBeAffected = [];
+  var rowIterator = row;
+  var columnIterator = column;
+  while(rowIterator > 0 && columnIterator < 7 ){
+       
+	   rowIterator -= 1;
+	   columnIterator +=1;
+	   var valueAtSpot = discs[rowIterator][columnIterator];
+	   if(valueAtSpot == 0 || valueAtSpot == turn){
+	   
+	    if(valueAtSpot == turn){
+		  affectedDiscs = affectedDiscs.concat(couldBeAffected);
+		}
+		break;
+	   
+	   
+	   }
+	   else{
+	    var discLocation = {row:rowIterator,column:columnIterator};
+		couldBeAffected.push(discLocation);
+	   }
+	   
+  }
+  
+  //upper left corner
+  couldBeAffected = [];
+  var rowIterator = row;
+  var columnIterator = column;
+  while(rowIterator > 0 && columnIterator > 0 ){
+       
+	   rowIterator -= 1;
+	   columnIterator -=1;
+	   var valueAtSpot = discs[rowIterator][columnIterator];
+	   if(valueAtSpot == 0 || valueAtSpot == turn){
+	   
+	    if(valueAtSpot == turn){
+		  affectedDiscs = affectedDiscs.concat(couldBeAffected);
+		}
+		break;
+	   
+	   
+	   }
+	   else{
+	    var discLocation = {row:rowIterator,column:columnIterator};
+		couldBeAffected.push(discLocation);
+	   }
+	   
+  }
+  
+  //bottom right corner
+  couldBeAffected = [];
+  var rowIterator = row;
+  var columnIterator = column;
+  while(rowIterator < 7 && columnIterator < 7 ){
+       
+	   rowIterator += 1;
+	   columnIterator +=1;
+	   var valueAtSpot = discs[rowIterator][columnIterator];
+	   if(valueAtSpot == 0 || valueAtSpot == turn){
+	   
+	    if(valueAtSpot == turn){
+		  affectedDiscs = affectedDiscs.concat(couldBeAffected);
+		}
+		break;
+	   
+	   
+	   }
+	   else{
+	    var discLocation = {row:rowIterator,column:columnIterator};
+		couldBeAffected.push(discLocation);
+	   }
+	   
+  }
+  
+  //bottom left corner
+  couldBeAffected = [];
+  var rowIterator = row;
+  var columnIterator = column;
+  while(rowIterator < 7 && columnIterator > 0 ){
+       
+	   rowIterator += 1;
+	   columnIterator -=1;
+	   var valueAtSpot = discs[rowIterator][columnIterator];
+	   if(valueAtSpot == 0 || valueAtSpot == turn){
+	   
+	    if(valueAtSpot == turn){
+		  affectedDiscs = affectedDiscs.concat(couldBeAffected);
+		}
+		break;
+	   
+	   
+	   }
+	   else{
+	    var discLocation = {row:rowIterator,column:columnIterator};
+		couldBeAffected.push(discLocation);
+	   }
+	   
+  }
+  
+  
+  return affectedDiscs;
+
+
+
+}
+
+//flip disks
+function flipDiscs(affectedDiscs){
+
+     for(var i = 0; i<affectedDiscs.length; i++){
+	 
+	     var spot = affectedDiscs[i];
+		 if(discs[spot.row][spot.column] == 1) discs[spot.row][spot.column] = 2;
+		 else discs[spot.row][spot.column] = 1;
+		 
+		 }
+
+}
+
+
+	
+	
+function drawDiscs(){
+    discLayer.innerHTML = "";
+	for(var row=0; row<8; row++){
+	      for(var column=0; column<8; column++)
+		  {
+		  
+		    var value = discs[row][column];
+			
+		    if(value!=0){
+			   var disc = document.createElement("div");
+			   disc.style.position = "absolute";
+			   disc.style.width = cellWidth-4;
+			   disc.style.height = cellWidth-4;
+			   disc.style.borderRadius = "50%";
+			   disc.style.left = (cellWidth+gap)*column + gap + 2;
+			   disc.style.top = (cellWidth+gap)*row + gap + 2;
+			
+			
+		    if(value==1){
+			  disc.style.backgroundColor = "black";
+			    }
+			if(value==2){
+			  disc.style.backgroundColor = "white";
+			    }
+		    discLayer.appendChild(disc);
+		    }
+		}
+	
+	
+	}
+
+}
+
+</script>
+
+<div id="blackBackground" style="position:absolute;left:35%;top:8%;background-color:black;height:500;width:500;"> </div>
+<div id="discLayer" style="position:absolute;left:35%;top:8%;" ></div>
+
+<div id ="score" style="position:absolute;left:35%;top:605;background-color:black;color:white;width:550;font-size:48; text-align:center;">Black: 2 White: 2 </div>
+
+<div id ="Turn" style="position:absolute;left:42%;top:-3;background-color:black;color:white;width:350;font-size:48; text-align:center;">Turn = Black </div>
+
+
+
+
+</html>
